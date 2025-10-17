@@ -180,3 +180,132 @@ impl ToDoList {
         Ok(Self::from_yaml( &yaml ))
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::path::PathBuf;
+
+    fn tmp_file(name: &str) -> PathBuf {
+        let mut path = std::env::temp_dir();
+        path.push(format!("{}_todo_test.yaml", name));
+        path
+    }
+
+    #[test]
+    fn test_todoitem_missing_required_fields() {
+        let kinds = ["Shader", "Material", "Prefab", "Animation", "Script", "Other"];
+
+        for kind in kinds {
+            let required = ToDoItem::required_keys(kind);
+            assert!(!required.is_empty(), "Expected required keys for {}", kind);
+
+            // omit last required key → should be invalid
+            let incomplete_fields: Vec<_> = required[..required.len() - 1]
+                .iter()
+                .map(|&k| (k, "dummy"))
+                .collect();
+
+            let item = ToDoItem::new(kind, incomplete_fields.clone());
+
+            // simulate validation check
+            let is_complete = required.iter().all(|&k| item.yaml.get_str(k).is_some());
+
+            assert!(
+                !is_complete,
+                "Item for kind '{}' should be invalid when missing fields: {:?}",
+                kind,
+                incomplete_fields
+            );
+        }
+    }
+
+    #[test]
+    fn test_todoitem_complete_required_fields() {
+        let kinds = ["Shader", "Material", "Prefab", "Animation", "Script", "Other"];
+
+        for kind in kinds {
+            let required = ToDoItem::required_keys(kind);
+            let fields: Vec<_> = required.iter().map(|&k| (k, "ok")).collect();
+            let item = ToDoItem::new(kind, fields.clone());
+
+            for (k, _) in fields {
+                assert!(
+                    item.yaml.get_str(k).is_some(),
+                    "Expected key '{}' in ToDoItem of kind '{}'",
+                    k,
+                    kind
+                );
+            }
+
+            // also check defaults are present
+            for k in ["status", "reason", "info"] {
+                assert!(
+                    item.yaml.get_str(k).is_some(),
+                    "Expected default field '{}' in ToDoItem",
+                    k
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_todolist_save_and_load() {
+        let mut list = ToDoList::new();
+
+        let item1 = ToDoItem::new(
+            "Shader",
+            vec![
+                ("unity_path", "Assets/Shaders/Example.shader"),
+                ("godot_path", "res://shaders/example.gdshader"),
+                ("instruction", "translate"),
+            ],
+        );
+        let item2 = ToDoItem::new(
+            "Prefab",
+            vec![
+                ("unity_path", "Assets/Prefabs/Player.prefab"),
+                ("godot_path", "res://scenes/Player.tscn"),
+            ],
+        );
+
+        list.insert("guid1", item1.clone());
+        list.insert("guid2", item2.clone());
+
+        let tmp = tmp_file("save_load");
+        list.save_to_file(&tmp).expect("Failed to save file");
+
+        let loaded = ToDoList::load_from_file(&tmp).expect("Failed to load file");
+
+        // Check that keys and counts match
+        assert_eq!(list.items.len(), loaded.items.len());
+        assert!(loaded.items.contains_key("guid1"));
+        assert!(loaded.items.contains_key("guid2"));
+
+        // Check some representative field values
+        let shader = &loaded.items["guid1"].yaml;
+        assert_eq!(shader.get_str("godot_path"), Some("res://shaders/example.gdshader".into()));
+
+        let prefab = &loaded.items["guid2"].yaml;
+        assert_eq!(prefab.get_str("unity_path"), Some("Assets/Prefabs/Player.prefab".into()));
+
+        // cleanup
+        fs::remove_file(&tmp).ok();
+    }
+
+    #[test]
+    fn test_required_keys_for_all_known_kinds() {
+        let kinds = ["Shader", "Material", "Prefab", "Animation", "Script", "Other", "Unknown"];
+
+        for kind in kinds {
+            let keys = ToDoItem::required_keys(kind);
+            match kind {
+                "Shader" | "Material" => assert_eq!(keys, &["unity_path", "godot_path", "instruction"]),
+                "Prefab" | "Animation" | "Script" | "Other" => assert_eq!(keys, &["unity_path", "godot_path"]),
+                _ => assert!(keys.is_empty(), "Unknown kind '{}' should have no required keys", kind),
+            }
+        }
+    }
+}

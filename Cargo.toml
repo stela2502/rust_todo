@@ -5,3 +5,23 @@ edition = "2024"
 
 [dependencies]
 rust_yaml = {git="https://github.com/stela2502/rust_yaml", ref="main"}
+eframe = "0.28"
+egui = "0.28"
+regex = "1"
+rfd = "0.14"
+cargo-packager = { version = "0.11.7", default-features = false }
+
+[profile.release]
+opt-level = 3
+
+[package.metadata.packager]
+before-packaging-command = "cargo build --release"
+name = "YAML ToDo Manager"
+identifier = "com.github.stela2502.rust_todo"
+icons = ["assets/icon-256.png"]
+
+# Enable Linux desktop integration
+[package.metadata.packager.linux]
+generate-desktop-entry = true
+
+

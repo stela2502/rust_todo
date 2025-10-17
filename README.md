@@ -1,11 +1,63 @@
-# 🗂️ ToDoList Library
+# 🗂️ ToDoList
 
 A small Rust utility library for managing **YAML-based ToDo items** — designed to track translation or conversion tasks (e.g. Unity → Godot shader/material/script conversions).  
 Each `ToDoItem` is stored as a `Yaml::Hash`, supporting serialization and persistence via the [`rust_yaml`](https://github.com/stela2502/rust_yaml) crate.
 
----
+## 🖥️ NEW! + Graphical ToDo Manager
 
-## ✨ Features
+Now the `rust_todo` package includes a lightweight **YAML ToDo Manager GUI** built with [`egui`](https://github.com/emilk/egui).  
+It allows you to inspect, search, and edit items from your YAML-based task lists created by the library.
+
+### ✨ Features
+- 🔍 Search by text or regex across all fields  
+- 🎯 Filter by task status (`Open`, `Done`, `Failed`, …)  
+- 📝 Edit task info and mark items as done or reopened  
+- 📋 Copy file paths to clipboard  
+- 🌗 Dark mode toggle  
+
+### 🚀 Launching
+After installation, you can start the GUI directly:
+
+```bash
+rust_todo
+```
+
+or from your system’s app menu — it appears as **“YAML ToDo Manager”** after installation.
+
+### 🧰 Packaging
+`rust_todo` supports full desktop integration through [`cargo-packager`](https://github.com/tauri-apps/cargo-packager).  
+Building with packaging enabled creates `.AppImage` and `.deb` bundles that include icons and a desktop entry:
+
+```bash
+cargo packager --release
+```
+
+The resulting bundles are placed in:
+```
+target/release/bundle/
+  ├── appimage/rust_todo.AppImage
+  └── deb/rust_todo_0.1.0_amd64.deb
+```
+
+Once installed, the app is available from your desktop environment under **Development → YAML ToDo Manager**.
+
+### 🧩 Manual install (optional)
+To install the app locally without packaging:
+```bash
+cargo install --path .
+~/.cargo/bin/rust_todo
+```
+
+If you want to add it to your desktop manually:
+```bash
+mkdir -p ~/.local/share/applications
+cp assets/yaml_todo_manager.desktop ~/.local/share/applications/
+update-desktop-database ~/.local/share/applications/
+```
+
+## The Library
+
+### ✨ Features
 
 - 📄 Simple `ToDoItem` type backed by YAML for easy serialization.
 - 🧩 Built-in validation of required keys per item type (`Shader`, `Material`, `Prefab`, etc.).
@@ -16,7 +68,7 @@ Each `ToDoItem` is stored as a `Yaml::Hash`, supporting serialization and persis
 
 ---
 
-## 🧱 Structure
+### 🧱 Structure
 
 ```rust
 use rust_yaml::yaml::Yaml;
@@ -32,7 +84,7 @@ pub struct ToDoList {
 
 ---
 
-## 🚀 Example Usage
+### 🚀 Example Usage
 
 ```rust
 use rust_yaml::yaml::Yaml;
@@ -70,7 +122,7 @@ fn main() -> std::io::Result<()> {
 
 ---
 
-## 🧩 Supported `type` Values
+### 🧩 Supported `type` Values
 
 | Type       | Required Keys                                  |
 |-------------|-----------------------------------------------|
@@ -88,9 +140,9 @@ Each item automatically gains:
 
 ---
 
-## ⚙️ API Overview
+### ⚙️ API Overview
 
-### `ToDoItem`
+**`ToDoItem`**
 | Method | Description |
 |--------|--------------|
 | `new(kind, fields)` | Construct a new ToDo item with `type` and other key-value pairs. |
@@ -104,7 +156,7 @@ Each item automatically gains:
 | `set_info(msg)` | Set the `"info"` field. |
 | `get(key)` | Retrieve a string value from the YAML by key. |
 
-### `ToDoList`
+**`ToDoList`**
 | Method | Description |
 |--------|--------------|
 | `new()` | Create an empty ToDoList. |
@@ -119,7 +171,7 @@ Each item automatically gains:
 
 ---
 
-## 🧾 Example YAML Format
+### 🧾 Example YAML Format
 
 ```yaml
 todo_list:
@@ -135,7 +187,7 @@ todo_list:
 
 ---
 
-## 🧰 Dependencies
+### 🧰 Dependencies
 
 ```toml
 [dependencies]
@@ -144,20 +196,20 @@ rust_yaml = { git = "https://github.com/stela2502/rust_yaml", branch = "main" }
 
 ---
 
-## 📜 License
+### 📜 License
 
 BSD 3-Clause (same as the rest of your `scenebridge_rs` project).
 
 ---
 
-## 🧠 Notes
+### 🧠 Notes
 
 This library is part of a larger **Unity → Godot translation system**, where ToDo items represent intermediate translation tasks (e.g., converting a Unity material or shader).  
 It can also be reused as a general-purpose YAML-backed task tracker in Rust projects.
 
 ---
 
-## 🧑‍💻 Author
+### 🧑‍💻 Author
 
 **Stefan Lang**  
 Bioinformatician, Rust enthusiast, and developer of the Unity → Godot converter toolkit.

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=YAML ToDo Manager
+Exec=yaml_todo_manager
+Icon=yaml_todo_manager
+Terminal=false
+Categories=Development;
